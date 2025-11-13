@@ -22,31 +22,32 @@ app.get("/health", (req, res) => {
 // Webhook endpoint for GitHub Actions
 app.post("/api/webhook/scrape", async (req, res) => {
   try {
-    // Optional: Add a secret token for security
+    // Validate auth token
     const authToken = req.headers["x-auth-token"];
 
     if (authToken !== process.env.WEBHOOK_SECRET) {
+      logger.warn("⚠️ Unauthorized webhook attempt");
       return res.status(401).json({ error: "Unauthorized" });
     }
 
     logger.info("🔄 Scrape triggered by webhook");
 
-    // Send response immediately BEFORE starting scraper
-    res.json({
+    // Send response immediately
+    res.status(202).json({
       success: true,
       message: "Scraping started",
       timestamp: new Date(),
     });
 
-    // Run scraper in background AFTER response is sent
-    // Import the correct scraper manager
-    const scraperManager = require("./utils/scraperManager");
-
-    // Use setImmediate to ensure response is sent first
+    // Run scraper in background using your existing orchestrator
     setImmediate(() => {
-      scraperManager.runAllScrapers().catch((err) => {
-        logger.error("Scrape error:", err);
-      });
+      runScraping()
+        .then((result) => {
+          logger.info("✅ Webhook scrape completed", result);
+        })
+        .catch((err) => {
+          logger.error("❌ Webhook scrape error:", err);
+        });
     });
   } catch (error) {
     logger.error("Webhook error:", error);
@@ -107,6 +108,7 @@ app.get("/", (req, res) => {
     status: "running",
     endpoints: {
       health: "/health",
+      webhook: "POST /api/webhook/scrape",
       trigger: "POST /scrape/trigger",
       stats: "/stats",
     },
