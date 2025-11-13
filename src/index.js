@@ -10,6 +10,7 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 
+// Health check endpoint
 app.get("/health", (req, res) => {
   res.json({
     status: "ok",
@@ -30,21 +31,30 @@ app.post("/api/webhook/scrape", async (req, res) => {
 
     logger.info("🔄 Scrape triggered by webhook");
 
-    // Don't wait for scraping to complete - respond immediately
+    // Send response immediately BEFORE starting scraper
     res.json({
       success: true,
       message: "Scraping started",
       timestamp: new Date(),
     });
 
-    // Run scraper in background
-    const { runAllScrapers } = require("./scrapers");
-    runAllScrapers().catch((err) => {
-      logger.error("Scrape error:", err);
+    // Run scraper in background AFTER response is sent
+    // Import the correct scraper manager
+    const scraperManager = require("./utils/scraperManager");
+
+    // Use setImmediate to ensure response is sent first
+    setImmediate(() => {
+      scraperManager.runAllScrapers().catch((err) => {
+        logger.error("Scrape error:", err);
+      });
     });
   } catch (error) {
     logger.error("Webhook error:", error);
-    res.status(500).json({ error: error.message });
+
+    // Check if headers already sent
+    if (!res.headersSent) {
+      res.status(500).json({ error: error.message });
+    }
   }
 });
 
