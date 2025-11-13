@@ -1,0 +1,25 @@
+name: Coupon Scraper Cron Job
+
+on:
+  schedule:
+    # Runs every 6 hours at minute 0 (00:00, 06:00, 12:00, 18:00 UTC)
+    - cron: '0 */6 * * *'
+  
+  # Allows manual trigger from GitHub Actions tab
+  workflow_dispatch:
+
+jobs:
+  trigger-scraper:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Trigger Scraper via Webhook
+        run: |
+          curl -X POST ${{ secrets.RENDER_WEBHOOK_URL }} \
+            -H "Content-Type: application/json" \
+            -H "x-auth-token: ${{ secrets.WEBHOOK_SECRET }}" \
+            -d '{"source": "github-actions", "timestamp": "'$(date -u +%Y-%m-%dT%H:%M:%SZ)'"}'
+      
+      - name: Log Result
+        run: |
+          echo "✅ Scraper triggered successfully at $(date -u)"
