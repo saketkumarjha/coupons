@@ -119,8 +119,8 @@ app.get("/", (req, res) => {
 // Setup cron job
 setupCronJob();
 
-// Start server
-app.listen(PORT, () => {
+// Start server - bind to 0.0.0.0 for Render
+app.listen(PORT, "0.0.0.0", () => {
   logger.info(`🚀 Coupon Scraper running on port ${PORT}`);
   logger.info(
     `📅 Cron job scheduled: Every ${process.env.SCRAPE_INTERVAL || 6} hours`
