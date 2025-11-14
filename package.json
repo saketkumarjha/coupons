@@ -6,8 +6,7 @@
   "scripts": {
     "start": "node src/index.js",
     "dev": "nodemon src/index.js",
-    "test": "node src/test.js",
-    "postinstall": "npx puppeteer browsers install chrome"
+    "test": "node src/test.js"
   },
   "keywords": [
     "coupon",
