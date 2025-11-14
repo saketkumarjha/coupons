@@ -17,5 +17,3 @@ services:
         sync: false
       - key: SCRAPE_INTERVAL
         value: 6
-      - key: PUPPETEER_SKIP_CHROMIUM_DOWNLOAD
-        value: false

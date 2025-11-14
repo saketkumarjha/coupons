@@ -1,7 +1,8 @@
 require("dotenv").config();
 const express = require("express");
 const { setupCronJob } = require("./cron");
-const { runScraping } = require("./services/orchestrator");
+// Use Cheerio-only orchestrator (no Puppeteer)
+const { runScraping } = require("./services/orchestratorCheerio");
 const { getScrapingStats } = require("./services/database");
 const logger = require("./utils/logger");
 
